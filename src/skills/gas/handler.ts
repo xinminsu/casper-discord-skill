@@ -13,7 +13,7 @@ export async function handleGasPriceCommand(interaction: ChatInputCommandInterac
       .setTitle('⛽ Current Gas Price')
       .setColor(0x00FF00)
       .addFields(
-        { name: 'Network', value: 'PHAROS', inline: true },
+        { name: 'Network', value: 'CASPER', inline: true },
         { name: '\u200B', value: '\u200B', inline: true },
         { name: '\u200B', value: '\u200B', inline: true },
         { name: 'Gas Price', value: `\`${gasPrices.gasPrice}\``, inline: true },
@@ -21,13 +21,13 @@ export async function handleGasPriceCommand(interaction: ChatInputCommandInterac
         { name: 'Priority Fee', value: `\`${gasPrices.maxPriorityFeePerGas}\``, inline: true }
       )
       .setTimestamp()
-      .setFooter({ text: 'Pharos Discord Bot' });
+      .setFooter({ text: 'Casper Discord Bot' });
 
     await interaction.editReply({
       embeds: [embed],
     });
 
-    logger.info(`Query Gas price: Pharos`);
+    logger.info(`Query Gas price: Casper`);
   } catch (error) {
     logger.error('Gas price query failed:', error);
     await interaction.editReply({
@@ -66,7 +66,7 @@ export async function handleGasEstimateCommand(interaction: ChatInputCommandInte
         { name: 'From', value: `\`${from}\``, inline: false },
         { name: 'To', value: `\`${to}\``, inline: false },
         { name: 'Amount', value: `${value} ETH`, inline: true },
-        { name: 'Network', value: 'Pharos', inline: true },
+        { name: 'Network', value: 'Casper', inline: true },
         { name: '\u200B', value: '\u200B', inline: true },
         { name: 'Gas Limit', value: `\`${gasInfo.gasLimit}\``, inline: true },
         { name: 'Gas Price', value: `\`${gasInfo.gasPrice}\``, inline: true },
@@ -77,13 +77,13 @@ export async function handleGasEstimateCommand(interaction: ChatInputCommandInte
         { name: 'Estimated Total Cost', value: `\`${gasInfo.estimatedCost}\``, inline: false }
       )
       .setTimestamp()
-      .setFooter({ text: 'Pharos Discord Bot' });
+      .setFooter({ text: 'Casper Discord Bot' });
 
     await interaction.editReply({
       embeds: [embed],
     });
 
-    logger.info(`Gas estimate: ${from} -> ${to} on Pharos`);
+    logger.info(`Gas estimate: ${from} -> ${to} on Casper`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Gas estimation failed:', error);

@@ -6,15 +6,15 @@ import { handleGasPriceCommand, handleGasEstimateCommand } from './handler';
 /**
  * Gas Skill
  * 
- * Provides gas price queries and transaction estimation for Pharos blockchain.
+ * Provides gas price queries and transaction estimation for Casper blockchain.
  */
 export class GasSkill extends BaseSkill {
   constructor() {
     super({
       name: 'gas',
       version: '1.0.0',
-      description: 'Query gas prices and estimate transaction fees on Pharos',
-      author: 'Pharos Team',
+      description: 'Query gas prices and estimate transaction fees on Casper',
+      author: 'Casper Team',
       commands: [gasPriceCommand, gasEstimateCommand],
     });
   }

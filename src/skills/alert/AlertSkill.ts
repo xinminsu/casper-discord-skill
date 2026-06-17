@@ -15,7 +15,7 @@ export class AlertSkill extends BaseSkill {
       name: 'alert',
       version: '1.0.0',
       description: 'Monitor blockchain events and send notifications',
-      author: 'Pharos Team',
+      author: 'Casper Team',
       commands: [alertCommand],
     });
   }

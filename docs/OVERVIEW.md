@@ -1,12 +1,12 @@
 # Project Overview
 
-Welcome to **Pharos Discord Bot** - a modern, skill-based Discord bot for blockchain interactions on the Pharos network.
+Welcome to **Casper Discord Bot** - a modern, skill-based Discord bot for blockchain interactions on the Casper network.
 
 ---
 
 ## 🎯 What is This?
 
-Pharos Discord Bot allows you to interact with the Pharos blockchain directly from Discord using simple slash commands. Query balances, check gas prices, set up alerts, and push notifications - all without leaving Discord.
+Casper Discord Bot allows you to interact with the Casper blockchain directly from Discord using simple slash commands. Query balances, check gas prices, set up alerts, and push notifications - all without leaving Discord.
 
 ---
 
@@ -15,7 +15,7 @@ Pharos Discord Bot allows you to interact with the Pharos blockchain directly fr
 ### 📊 Balance Queries
 - Check ETH balances for any wallet
 - Query ERC20 token balances
-- Real-time data from Pharos network
+- Real-time data from Casper network
 
 ### ⛽ Gas Information
 - Current gas prices
@@ -74,7 +74,7 @@ src/
 ### Prerequisites
 - Node.js >= 18.x
 - Discord Bot Token
-- Pharos RPC URL
+- Casper RPC URL
 
 ### Installation
 
@@ -154,14 +154,14 @@ See [docs/SKILL_DEVELOPMENT.md](SKILL_DEVELOPMENT.md) for complete guide.
 
 ## 🌐 Blockchain Support
 
-**Current Network**: Pharos only
+**Current Network**: Casper only
 
-This bot is specifically designed for the Pharos blockchain network. All queries and transactions are executed on Pharos.
+This bot is specifically designed for the Casper blockchain network. All queries and transactions are executed on Casper.
 
 **Configuration:**
 ```env
-PHAROS_RPC_URL=https://rpc.pharos.network
-PHAROS_CHAIN_ID=1
+CASPER_RPC_URL=https://rpc.casper.network
+CASPER_CHAIN_ID=1
 ```
 
 ---
@@ -222,7 +222,7 @@ We welcome contributions!
 - Re-invite the bot with proper permissions
 
 **Query failed?**
-- Check your PHAROS_RPC_URL is accessible
+- Check your CASPER_RPC_URL is accessible
 - Verify wallet address format (0x...)
 
 **Bot offline?**
@@ -248,7 +248,7 @@ MIT License - Feel free to use and modify!
 
 **Version**: 2.0.0  
 **Architecture**: Skill-Based  
-**Network**: Pharos  
-**Last Updated**: 2026-06-16
+**Network**: Casper  
+**Last Updated**: 2026-06-18
 
 Happy coding! 🚀

@@ -1,6 +1,6 @@
 # Available Skills
 
-This document lists all available skills in Pharos Discord Bot.
+This document lists all available skills in Casper Discord Bot.
 
 ---
 
@@ -10,7 +10,7 @@ This document lists all available skills in Pharos Discord Bot.
 **Version**: 1.0.0
 
 ### Description
-Query wallet balances on the Pharos blockchain network.
+Query wallet balances on the Casper blockchain network.
 
 ### Commands
 
@@ -29,10 +29,10 @@ Query ETH or token balance for a wallet address.
 
 **Response Format:**
 ```
-💰 Pharos ETH Balance
+💰 Casper ETH Balance
 ├─ Wallet Address: 0x742d...
 ├─ Balance: 12.345 ETH
-└─ Network: Pharos
+└─ Network: Casper
 ```
 
 ---
@@ -43,7 +43,7 @@ Query ETH or token balance for a wallet address.
 **Version**: 1.0.0
 
 ### Description
-Query gas prices and estimate transaction fees on Pharos network.
+Query gas prices and estimate transaction fees on Casper network.
 
 ### Commands
 
@@ -60,7 +60,7 @@ Display current gas price information.
 **Response Format:**
 ```
 ⛽ Current Gas Price
-├─ Network: PHAROS
+├─ Network: CASPER
 ├─ Gas Price: 50 gwei
 ├─ Max Fee Per Gas: 60 gwei
 └─ Priority Fee: 2 gwei
@@ -194,7 +194,7 @@ Send a message to a channel.
 
 The actual message appears in the target channel as:
 ```
-📢 **Pharos Notification**
+📢 **Casper Notification**
 
 [Your message content]
 ```
@@ -266,7 +266,7 @@ export class MySkill extends BaseSkill {
 
 These skills are planned for future releases:
 
-- **Transaction Skill**: Execute transactions on Pharos
+- **Transaction Skill**: Execute transactions on Casper
 - **Token Skill**: Token transfer and approval
 - **NFT Skill**: NFT balance and transfers
 - **Price Skill**: Token price queries
@@ -277,4 +277,4 @@ These skills are planned for future releases:
 
 **Total Skills**: 4  
 **Total Commands**: 7  
-**Last Updated**: 2026-06-16
+**Last Updated**: 2026-06-18

@@ -14,7 +14,7 @@ export class PushSkill extends BaseSkill {
       name: 'push',
       version: '1.0.0',
       description: 'Push notification messages to Discord channels',
-      author: 'Pharos Team',
+      author: 'Casper Team',
       commands: [pushCommand],
     });
   }

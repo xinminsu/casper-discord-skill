@@ -39,11 +39,11 @@ export async function handleBalanceCommand(interaction: ChatInputCommandInteract
       // Convert token address to checksum format
       const checksumToken = ethers.getAddress(token.toLowerCase());
       balanceInfo = await getTokenBalance(checksumToken, checksumAddress);
-      title = `💰 Pharos Token Balance`;
+      title = `💰 Casper Token Balance`;
     } else {
       // Query ETH balance
       balanceInfo = await getEthBalance(checksumAddress);
-      title = `💰 Pharos ETH Balance`;
+      title = `💰 Casper ETH Balance`;
     }
 
     const embed = new EmbedBuilder()
@@ -52,16 +52,16 @@ export async function handleBalanceCommand(interaction: ChatInputCommandInteract
       .addFields(
         { name: 'Wallet Address', value: `\`${checksumAddress}\``, inline: false },
         { name: 'Balance', value: `\`${balanceInfo}\``, inline: false },
-        { name: 'Network', value: 'Pharos', inline: true }
+        { name: 'Network', value: 'Casper', inline: true }
       )
       .setTimestamp()
-      .setFooter({ text: 'Pharos Discord Bot' });
+      .setFooter({ text: 'Casper Discord Bot' });
 
     await interaction.editReply({
       embeds: [embed],
     });
 
-    logger.info(`Query balance: ${checksumAddress} on Pharos`);
+    logger.info(`Query balance: ${checksumAddress} on Casper`);
   } catch (error) {
     logger.error('Balance query failed:', error);
     await interaction.editReply({

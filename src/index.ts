@@ -22,7 +22,7 @@ const skillManager = new SkillManager();
 
 // Bot ready event
 client.once('ready', async () => {
-  logger.info(`Pharos Bot is online! Username: ${client.user?.tag}`);
+  logger.info(`Casper Bot is online! Username: ${client.user?.tag}`);
   logger.info(`Currently serving ${client.guilds.cache.size} servers`);
   
   // Initialize Skill Manager
@@ -119,7 +119,7 @@ async function registerCommands() {
 // Login to Discord
 client.login(TOKEN)
   .then(() => {
-    logger.info('Pharos Bot logged in successfully!');
+    logger.info('Casper Bot logged in successfully!');
   })
   .catch((error: any) => {
     logger.error('Login failed:', error);

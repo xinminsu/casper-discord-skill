@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide explains how to create new skills for the Pharos Discord Bot using the Skill-based architecture.
+This guide explains how to create new skills for the Casper Discord Bot using the Skill-based architecture.
 
 ## What is a Skill?
 

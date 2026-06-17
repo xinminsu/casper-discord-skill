@@ -1,11 +1,11 @@
-# Pharos Discord Bot Quick Start Guide
+# Casper Discord Bot Quick Start Guide
 
 ## 🚀 5-Minute Quick Start
 
 ### Step 1: Create Discord Bot
 
 1. Visit [Discord Developer Portal](https://discord.com/developers/applications)
-2. Click "New Application" and enter application name (e.g., "Pharos Bot")
+2. Click "New Application" and enter application name (e.g., "Casper Bot")
 3. Select "Bot" from the left menu
 4. Click "Add Bot" → "Yes, do it!"
 5. In the "Token" section, click "Reset Token" → "Copy" and save this Token
@@ -36,9 +36,9 @@ cp .env.example .env
 DISCORD_TOKEN=Your_Bot_Token
 DISCORD_CLIENT_ID=Your_Client_ID
 
-# Pharos RPC Configuration
-PHAROS_RPC_URL=https://rpc.pharos.network
-PHAROS_CHAIN_ID=1
+# Casper RPC Configuration
+CASPER_RPC_URL=https://rpc.casper.network
+CASPER_CHAIN_ID=1
 ```
 
 ### Step 5: Install and Run
@@ -51,7 +51,7 @@ npm install
 npm run dev
 ```
 
-When you see "Pharos Bot is online!", it means success!
+When you see "Casper Bot is online!", it means success!
 
 ## 📱 Test Commands
 
@@ -73,7 +73,7 @@ A: Wait a few minutes for Discord to sync commands, or re-invite the Bot.
 A: Make sure the address format is correct, starts with 0x and is 42 characters long.
 
 **Q: Query failed?**  
-A: Check if the Pharos RPC URL is available and accessible.
+A: Check if the Casper RPC URL is available and accessible.
 
 **Q: How to stop the Bot?**  
 A: Press `Ctrl + C` in the terminal
@@ -88,7 +88,7 @@ npm run build
 
 # Use PM2 to manage process
 npm install -g pm2
-pm2 start dist/index.js --name pharos-bot
+pm2 start dist/index.js --name casper-bot
 pm2 save
 pm2 startup
 ```

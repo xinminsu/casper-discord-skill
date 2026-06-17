@@ -1,8 +1,8 @@
-# Pharos Discord Bot - Architecture Documentation
+# Casper Discord Bot - Architecture Documentation
 
 ## Overview
 
-Pharos Discord Bot is built using a modern **Skill-based architecture** that provides modularity, extensibility, and maintainability. Each feature is implemented as an independent skill module managed by a central SkillManager.
+Casper Discord Bot is built using a modern **Skill-based architecture** that provides modularity, extensibility, and maintainability. Each feature is implemented as an independent skill module managed by a central SkillManager.
 
 ---
 
@@ -141,7 +141,7 @@ src/skills/{skill-name}/
 ### Available Skills
 
 #### 1. Balance Skill (`src/skills/balance/`)
-**Purpose**: Query wallet balances on Pharos network
+**Purpose**: Query wallet balances on Casper network
 
 **Commands:**
 - `/balance` - Query ETH or token balance
@@ -209,8 +209,8 @@ estimateGas(from, to, value): Promise<GasEstimate>
 ```
 
 **Configuration:**
-- Single-chain focus: Pharos network only
-- RPC URL from environment: `PHAROS_RPC_URL`
+- Single-chain focus: Casper network only
+- RPC URL from environment: `CASPER_RPC_URL`
 - ethers.js v6 for blockchain interactions
 
 ### Logger (`src/utils/logger.ts`)
@@ -290,9 +290,9 @@ For each alert:
 DISCORD_TOKEN=your_bot_token
 DISCORD_CLIENT_ID=your_client_id
 
-# Pharos Blockchain Configuration
-PHAROS_RPC_URL=https://rpc.pharos.network
-PHAROS_CHAIN_ID=1
+# Casper Blockchain Configuration
+CASPER_RPC_URL=https://rpc.casper.network
+CASPER_CHAIN_ID=1
 
 # Application Configuration
 LOG_LEVEL=info
@@ -467,7 +467,7 @@ npm run dev
 
 ```bash
 npm run build
-pm2 start dist/index.js --name pharos-bot
+pm2 start dist/index.js --name casper-bot
 pm2 save
 ```
 
@@ -503,7 +503,7 @@ pm2 save
 ### v2.0.0 (Current)
 - Skill-based architecture
 - Modular design
-- Pharos-only blockchain support
+- Casper-only blockchain support
 - Complete English localization
 
 ### v1.0.0 (Legacy)
@@ -555,6 +555,6 @@ pm2 save
 
 ---
 
-**Last Updated**: 2026-06-16  
+**Last Updated**: 2026-06-18  
 **Version**: 2.0.0  
 **Architecture**: Skill-Based

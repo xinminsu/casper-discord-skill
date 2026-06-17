@@ -19,7 +19,7 @@ export async function handlePushCommand(interaction: ChatInputCommandInteraction
 
     // Send message to specified channel
     await targetChannel.send({
-      content: `📢 **Pharos Notification**\n\n${message}`,
+      content: `📢 **Casper Notification**\n\n${message}`,
     });
 
     await interaction.editReply({

@@ -6,15 +6,15 @@ import { handleBalanceCommand } from './handler';
 /**
  * Balance Skill
  * 
- * Provides wallet balance查询 functionality for Pharos blockchain.
+ * Provides wallet balance query functionality for Casper blockchain.
  */
 export class BalanceSkill extends BaseSkill {
   constructor() {
     super({
       name: 'balance',
       version: '1.0.0',
-      description: 'Query wallet balance on Pharos blockchain',
-      author: 'Pharos Team',
+      description: 'Query wallet balance on Casper blockchain',
+      author: 'Casper Team',
       commands: [balanceCommand],
     });
   }

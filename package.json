@@ -1,7 +1,7 @@
 {
-  "name": "pharos-discord-skill",
+  "name": "casper-discord-skill",
   "version": "1.0.0",
-  "description": "Pharos Discord Skill - 支持消息推送、代币查询、交易执行和 Gas 估算",
+  "description": "Casper Discord Skill - 支持消息推送、代币查询、交易执行和 Gas 估算",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
@@ -12,7 +12,7 @@
   "keywords": [
     "discord",
     "bot",
-    "pharos",
+    "casper",
     "blockchain",
     "web3"
   ],
