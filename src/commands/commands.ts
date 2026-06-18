@@ -11,7 +11,7 @@ export const balanceCommand = new SlashCommandBuilder()
   )
   .addStringOption(option =>
     option.setName('token')
-      .setDescription('Token contract address (optional, leave blank to query ETH balance)')
+      .setDescription('Token contract address (optional, leave blank to query CSPR balance)')
       .setRequired(false)
   );
 
@@ -31,7 +31,7 @@ export const gasEstimateCommand = new SlashCommandBuilder()
   )
   .addStringOption(option =>
     option.setName('value')
-      .setDescription('Transfer amount (ETH)')
+      .setDescription('Transfer amount (CSPR)')
       .setRequired(false)
   );
 

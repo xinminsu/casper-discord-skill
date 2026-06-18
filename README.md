@@ -5,7 +5,7 @@ A powerful Discord Bot built with Skill-based architecture for blockchain querie
 ## ✨ Features
 
 ### 📊 Balance Query
-- Query ETH balance for any wallet address
+- Query CSPR balance for any wallet address
 - Query ERC20 token balances
 - Real-time blockchain data from Casper network
 
@@ -73,8 +73,13 @@ DISCORD_TOKEN=your_discord_bot_token_here
 DISCORD_CLIENT_ID=your_client_id_here
 
 # Casper Blockchain Configuration
-CASPER_RPC_URL=https://rpc.casper.network
+# Testnet (for testing)
+CASPER_RPC_URL=https://rpc.testnet.cspr.cloud/rpc
 CASPER_CHAIN_ID=1
+
+# Mainnet (for production)
+# CASPER_RPC_URL=https://rpc.cspr.live
+# CASPER_CHAIN_ID=1
 
 # Logging
 LOG_LEVEL=info
@@ -99,7 +104,7 @@ npm start
 
 ### `/balance` - Query Balance
 
-Query wallet ETH or token balance on Casper network.
+Query wallet CSPR or token balance on Casper network.
 
 **Parameters:**
 - `address` (required): Wallet address
@@ -127,7 +132,7 @@ Estimate gas fees required for a transaction on Casper.
 **Parameters:**
 - `from` (required): Sender address
 - `to` (required): Receiver address
-- `value` (optional): Transfer amount (ETH), default 0
+- `value` (optional): Transfer amount (CSPR), default 0
 
 **Example:**
 ```

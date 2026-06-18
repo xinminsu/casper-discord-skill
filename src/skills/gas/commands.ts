@@ -19,6 +19,6 @@ export const gasEstimateCommand = new SlashCommandBuilder()
   )
   .addStringOption(option =>
     option.setName('value')
-      .setDescription('Transfer amount (ETH)')
+      .setDescription('Transfer amount (CSPR)')
       .setRequired(false)
   );

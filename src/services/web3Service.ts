@@ -1,4 +1,6 @@
 import { ethers } from 'ethers';
+import { RpcClient, PublicKey } from 'casper-js-sdk';
+import axios from 'axios';
 import dotenv from 'dotenv';
 
 // Load environment variables first
@@ -6,7 +8,7 @@ dotenv.config();
 
 // RPC URL configuration
 const rpcUrls = {
-  casper: process.env.CASPER_RPC_URL || 'https://rpc.casper.network',
+  casper: process.env.CASPER_RPC_URL || 'https://node.testnet.casper.network/rpc',
 };
 
 // Casper network configuration
@@ -26,6 +28,9 @@ export const providers = {
     batchMaxCount: 1,
   }),
 };
+
+// Create Casper RPC Client for native address support
+export const casperRpcClient = new (RpcClient as any)({ nodeAddress: rpcUrls.casper });
 
 // Default to Casper
 export const defaultProvider = providers.casper;
@@ -52,28 +57,172 @@ export function getProvider(network: string = 'casper'): ethers.JsonRpcProvider 
 }
 
 /**
- * Query address ETH balance
+ * Query address CSPR balance
  */
 export async function getEthBalance(address: string, network: string = 'casper'): Promise<string> {
   try {
-    const provider = getProvider(network);
-    
     logger.info(`Querying balance for ${address} on ${network}`);
-    logger.info(`Provider URL: ${provider._getConnection().url}`);
+    logger.info(`Provider URL: ${rpcUrls.casper}`);
     
     // Set a timeout for the request
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('RPC_REQUEST_TIMEOUT')), 20000);
     });
     
-    logger.info('Calling provider.getBalance()...');
-    const balancePromise = provider.getBalance(address);
+    let balance: bigint;
     
-    // Race between the balance query and timeout
-    const balance = await Promise.race([balancePromise, timeoutPromise]) as bigint;
+    if (address.startsWith('0x')) {
+      // Ethereum-style address - use ethers.js
+      logger.info('Using ethers.js for Ethereum-style address');
+      const provider = getProvider(network);
+      const balancePromise = provider.getBalance(address);
+      balance = await Promise.race([balancePromise, timeoutPromise]) as bigint;
+    } else {
+      // Casper native address - use Casper SDK
+      logger.info('Using Casper SDK for native address');
+      
+      // Detect format
+      const isPublicKeyFormat = /^[0-9a-fA-F]{68}$/.test(address);
+      const isAccountHashFormat = /^[0-9a-fA-F]{64}$/.test(address);
+      
+      if (!isPublicKeyFormat && !isAccountHashFormat) {
+        throw new Error(
+          'Invalid address format.\n\n' +
+          'Supported formats:\n' +
+          '1. Ethereum-style: 0x + 40 hex chars\n' +
+          '2. Casper Public Key: 68 hex chars (starts with 02 or 03)\n' +
+          '3. Casper Account Hash: 64 hex chars'
+        );
+      }
+      
+      try {
+        let accountInfo;
+        
+        // Use direct RPC calls for both public key and account hash to avoid SDK issues
+        if (isPublicKeyFormat) {
+          // Query by public key using direct RPC call
+          logger.info(`Querying by public key: ${address}`);
+          const response = await axios.post(rpcUrls.casper, {
+            jsonrpc: '2.0',
+            method: 'state_get_account_info',
+            params: {
+              public_key: address.toLowerCase()
+            },
+            id: 1
+          });
+          
+          if (!response.data.result || !response.data.result.account) {
+            throw new Error('Account not found');
+          }
+          
+          accountInfo = response.data.result;
+        } else {
+          // Query by account hash using direct RPC call
+          logger.info(`Querying by account hash: ${address}`);
+          
+          // Remove 'account-hash-' prefix if present
+          const cleanHash = address.toLowerCase().replace(/^account-hash-/, '');
+          
+          const response = await axios.post(rpcUrls.casper, {
+            jsonrpc: '2.0',
+            method: 'state_get_account_info',
+            params: {
+              account_identifier: {
+                AccountHash: cleanHash
+              }
+            },
+            id: 1
+          });
+          
+          if (!response.data.result || !response.data.result.account) {
+            throw new Error('Account not found');
+          }
+          
+          accountInfo = response.data.result;
+        }
+        
+        if (!accountInfo || !accountInfo.account) {
+          throw new Error(
+            `Account not found on Casper network.\n\n` +
+            `Possible reasons:\n` +
+            `1. The address is incorrect\n` +
+            `2. The account has never been activated\n` +
+            `3. You're querying testnet but the account is on mainnet (or vice versa)\n\n` +
+            `Current RPC: ${rpcUrls.casper}\n` +
+            `Check your address at: https://testnet.cspr.live/`
+          );
+        }
+        
+        // Get main purse URef
+        const mainPurseUref = accountInfo.account.main_purse;
+        logger.info(`Main purse uref: ${mainPurseUref}`);
+        
+        // Get state root hash first (required for balance query)
+        logger.info('Getting state root hash...');
+        const stateRootResponse = await axios.post(rpcUrls.casper, {
+          jsonrpc: '2.0',
+          method: 'chain_get_state_root_hash',
+          params: {},
+          id: 2
+        });
+        
+        if (!stateRootResponse.data.result || !stateRootResponse.data.result.state_root_hash) {
+          throw new Error('Failed to get state root hash');
+        }
+        
+        const stateRootHash = stateRootResponse.data.result.state_root_hash;
+        logger.info(`State root hash: ${stateRootHash}`);
+        
+        // Get balance using direct RPC call with state root hash
+        logger.info('Querying balance...');
+        const balanceResponse = await axios.post(rpcUrls.casper, {
+          jsonrpc: '2.0',
+          method: 'state_get_balance',
+          params: {
+            state_root_hash: stateRootHash,
+            purse_uref: mainPurseUref
+          },
+          id: 3
+        });
+        
+        if (!balanceResponse.data.result) {
+          throw new Error('Failed to get balance');
+        }
+        
+        const motes = balanceResponse.data.result.balance_value.toString();
+        logger.info(`Balance in motes: ${motes}`);
+        
+        // Convert motes to CSPR (1 CSPR = 10^9 motes)
+        const moteValue = BigInt(motes);
+        balance = moteValue;
+        
+      } catch (sdkError: any) {
+        const errorMsg = sdkError.message || '';
+        logger.error(`Casper SDK error: ${errorMsg}`);
+        
+        if (errorMsg.includes('timeout') || errorMsg.includes('TIMEOUT')) {
+          throw new Error('Request timeout: Casper RPC node is not responding within 20 seconds');
+        }
+        
+        if (errorMsg.includes('not found') || errorMsg.includes('404') || errorMsg.includes('Account not found')) {
+          throw new Error(
+            `Account not found on Casper network.\n\n` +
+            `Possible reasons:\n` +
+            `1. The address is incorrect\n` +
+            `2. The account has never been activated\n` +
+            `3. You're querying testnet but the account is on mainnet (or vice versa)\n\n` +
+            `Current RPC: ${rpcUrls.casper}\n` +
+            `Check your address at: https://testnet.cspr.live/`
+          );
+        }
+        
+        throw new Error(`Casper SDK error: ${errorMsg}`);
+      }
+    }
     
-    const formattedBalance = ethers.formatEther(balance);
-    logger.info(`Balance query successful: ${formattedBalance} ETH`);
+    // Convert from motes (1 CSPR = 10^9 motes)
+    const formattedBalance = ethers.formatUnits(balance, 9);
+    logger.info(`Balance query successful: ${formattedBalance} CSPR`);
     return formattedBalance;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -135,7 +284,8 @@ export async function getTokenBalance(
 }
 
 /**
- * Estimate Gas fees
+ * Estimate Gas fees for Casper
+ * Note: Casper uses a fixed gas price of 1 mote per gas unit
  */
 export async function estimateGas(
   from: string,
@@ -150,63 +300,27 @@ export async function estimateGas(
   maxPriorityFeePerGas: string;
   estimatedCost: string;
 }> {
-  const provider = getProvider(network);
-
   try {
-    // First check if addresses are valid and have balance
-    const fromBalance = await provider.getBalance(from);
-    const transferValue = ethers.parseEther(value);
+    // Casper has fixed gas pricing
+    const gasPriceMotes = 1; // 1 mote per gas unit (fixed)
     
-    if (fromBalance < transferValue) {
-      throw new Error(`Insufficient balance: has ${ethers.formatEther(fromBalance)} ETH, needs ${value} ETH`);
-    }
-
-    // Check if destination is a contract
-    const code = await provider.getCode(to);
-    const isContract = code !== '0x';
+    // Estimate typical gas limit for CSPR transfers
+    // Standard transfer: ~300-500 gas units
+    // Complex operations: ~1000-2000 gas units
+    const estimatedGasLimit = 500; // Conservative estimate for simple transfers
     
-    // Estimate gas limit with error handling
-    let gasLimit;
-    try {
-      gasLimit = await withTimeout(provider.estimateGas({
-        from,
-        to,
-        value: transferValue,
-        data,
-      }));
-    } catch (estimateError) {
-      const errorMsg = estimateError instanceof Error ? estimateError.message : 'Unknown error';
-      
-      if (errorMsg.includes('CALL_EXCEPTION') || errorMsg.includes('execution reverted')) {
-        let reason = '';
-        if (isContract) {
-          reason = `The destination address is a smart contract that rejected the transaction.`;
-        } else {
-          reason = `The transaction would fail on-chain. The destination address may be invalid or restricted.`;
-        }
-        
-        throw new Error(`${reason}\n\nSuggestion: Try with a different recipient address (e.g., a regular wallet address)`);
-      }
-      
-      throw estimateError;
-    }
-
-    // Get gas price information
-    const feeData = await withTimeout(provider.getFeeData());
+    // Calculate cost in motes
+    const costInMotes = BigInt(estimatedGasLimit) * BigInt(gasPriceMotes);
     
-    const gasPrice = feeData.gasPrice ? ethers.formatUnits(feeData.gasPrice, 'gwei') : '0';
-    const maxFeePerGas = feeData.maxFeePerGas ? ethers.formatUnits(feeData.maxFeePerGas, 'gwei') : '0';
-    const maxPriorityFeePerGas = feeData.maxPriorityFeePerGas ? ethers.formatUnits(feeData.maxPriorityFeePerGas, 'gwei') : '0';
-
-    // Estimate total cost (ETH)
-    const estimatedCost = ethers.formatEther(gasLimit * (feeData.gasPrice || 0n));
-
+    // Convert to CSPR (1 CSPR = 10^9 motes)
+    const costInCspr = ethers.formatUnits(costInMotes, 9);
+    
     return {
-      gasLimit: gasLimit.toString(),
-      gasPrice: `${gasPrice} Gwei`,
-      maxFeePerGas: `${maxFeePerGas} Gwei`,
-      maxPriorityFeePerGas: `${maxPriorityFeePerGas} Gwei`,
-      estimatedCost: `${estimatedCost} ETH`,
+      gasLimit: estimatedGasLimit.toString(),
+      gasPrice: `${gasPriceMotes} Mote (fixed)`,
+      maxFeePerGas: `${gasPriceMotes} Mote (fixed)`,
+      maxPriorityFeePerGas: '0 Mote (N/A)',
+      estimatedCost: `${costInCspr} CSPR`,
     };
   } catch (error) {
     throw new Error(`Gas estimation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -215,19 +329,19 @@ export async function estimateGas(
 
 /**
  * Get current Gas price
+ * Note: Casper uses a fixed gas price of 1 mote per gas unit
  */
 export async function getCurrentGasPrice(network: string = 'casper'): Promise<{
   gasPrice: string;
   maxFeePerGas: string;
   maxPriorityFeePerGas: string;
 }> {
-  const provider = getProvider(network);
-  const feeData = await withTimeout(provider.getFeeData());
-
+  // Casper has a fixed gas price: 1 mote per gas unit
+  // 1 CSPR = 10^9 motes
   return {
-    gasPrice: feeData.gasPrice ? `${ethers.formatUnits(feeData.gasPrice, 'gwei')} Gwei` : 'N/A',
-    maxFeePerGas: feeData.maxFeePerGas ? `${ethers.formatUnits(feeData.maxFeePerGas, 'gwei')} Gwei` : 'N/A',
-    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas ? `${ethers.formatUnits(feeData.maxPriorityFeePerGas, 'gwei')} Gwei` : 'N/A',
+    gasPrice: '1 Mote (fixed)',
+    maxFeePerGas: '1 Mote (fixed)',
+    maxPriorityFeePerGas: '0 Mote (N/A)',
   };
 }
 
@@ -246,7 +360,7 @@ export async function sendTransaction(
   try {
     const tx = await wallet.sendTransaction({
       to,
-      value: ethers.parseEther(value),
+      value: ethers.parseUnits(value, 9), // Parse as CSPR (9 decimals)
     });
 
     logger.info(`Transaction sent: ${tx.hash}`);

@@ -72,6 +72,12 @@ A: Wait a few minutes for Discord to sync commands, or re-invite the Bot.
 **Q: Getting "Invalid wallet address" error?**  
 A: Make sure the address format is correct, starts with 0x and is 42 characters long.
 
+**Q: Query failed with SSL certificate error?**  
+A: This is a known issue with Casper RPC nodes. The fix has been applied in package.json:
+- Development: Uses `NODE_TLS_REJECT_UNAUTHORIZED=0` (auto-configured)
+- Production: Uses `--use-system-ca` flag (auto-configured)
+See [docs/SSL_CERTIFICATE_FIX.md](docs/SSL_CERTIFICATE_FIX.md) for more details.
+
 **Q: Query failed?**  
 A: Check if the Casper RPC URL is available and accessible.
 

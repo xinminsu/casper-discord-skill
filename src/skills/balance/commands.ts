@@ -10,6 +10,6 @@ export const balanceCommand = new SlashCommandBuilder()
   )
   .addStringOption(option =>
     option.setName('token')
-      .setDescription('Token contract address (optional, leave blank to query ETH balance)')
+      .setDescription('Token contract address (optional, leave blank to query CSPR balance)')
       .setRequired(false)
   );

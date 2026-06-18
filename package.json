@@ -4,8 +4,8 @@
   "description": "Casper Discord Skill - 支持消息推送、代币查询、交易执行和 Gas 估算",
   "main": "dist/index.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
+    "start": "node --use-system-ca dist/index.js",
+    "dev": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 ts-node src/index.ts",
     "build": "tsc",
     "watch": "tsc --watch"
   },
@@ -19,6 +19,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "axios": "^1.18.0",
+    "casper-js-sdk": "^5.0.12",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.1",
     "ethers": "^6.11.1",
@@ -28,7 +30,8 @@
   "devDependencies": {
     "@types/node": "^20.11.5",
     "@types/node-cron": "^3.0.11",
-    "typescript": "^5.3.3",
-    "ts-node": "^10.9.2"
+    "cross-env": "^10.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }

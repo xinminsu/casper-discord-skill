@@ -19,8 +19,8 @@ This usually means:
 
 ### 1. Destination Address Issues
 
-#### A. Contract Address Rejecting ETH
-Some smart contracts don't accept direct ETH transfers and will reject transactions.
+#### A. Contract Address Rejecting CSPR
+Some smart contracts don't accept direct CSPR transfers and will reject transactions.
 
 **Example:**
 ```bash
@@ -38,11 +38,11 @@ The destination address might be:
 
 ### 2. Insufficient Balance
 
-If the sender address doesn't have enough ETH for the transfer + gas fees, the estimation will fail.
+If the sender address doesn't have enough CSPR for the transfer + gas fees, the estimation will fail.
 
 **Error Message:**
 ```
-Insufficient balance: has 0.5 ETH, needs 1.0 ETH
+Insufficient balance: has 0.5 CSPR, needs 1.0 CSPR
 ```
 
 ### 3. Network-Specific Restrictions
@@ -73,7 +73,7 @@ Or:
 ```
 ❌ Gas estimation failed
 
-Insufficient balance: has 0.05 ETH, needs 0.1 ETH
+Insufficient balance: has 0.05 CSPR, needs 0.1 CSPR
 ```
 
 ---
@@ -86,7 +86,7 @@ The improved `estimateGas` function now performs these checks:
 ```typescript
 const fromBalance = await provider.getBalance(from);
 if (fromBalance < transferValue) {
-  throw new Error(`Insufficient balance: has ${ethers.formatEther(fromBalance)} ETH, needs ${value} ETH`);
+  throw new Error(`Insufficient balance: has ${ethers.formatUnits(fromBalance, 9)} CSPR, needs ${value} CSPR`);
 }
 ```
 
@@ -113,7 +113,7 @@ if (isContract) {
 
 Use these well-known addresses for testing:
 
-1. **Vitalik's Address** (public, accepts ETH):
+1. **Public Test Address** (accepts CSPR):
    ```
    /gas-estimate from:0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 to:0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 value:0.001
    ```
@@ -130,7 +130,7 @@ Use these well-known addresses for testing:
 
 From: 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045
 To: 0x742d35cC6634c0532925A3b844bc9E7595F0beB1
-Amount: 0.1 ETH
+Amount: 0.1 CSPR
 Network: Casper
 
 Gas Limit: 21000
@@ -138,7 +138,7 @@ Gas Price: 10.5 Gwei
 Max Fee Per Gas: 12.0 Gwei
 Priority Fee: 1.5 Gwei
 
-Estimated Total Cost: 0.0002205 ETH
+Estimated Total Cost: 0.0002205 CSPR
 ```
 
 ---
@@ -158,7 +158,7 @@ Estimated Total Cost: 0.0002205 ETH
 ```
 
 ### Scenario 3: Sending to Contract
-❌ **May fail** if contract rejects ETH
+❌ **May fail** if contract rejects CSPR
 ```bash
 /gas-estimate from:0xYourAddress to:0xContractAddress value:0.1
 ```
@@ -166,9 +166,9 @@ Estimated Total Cost: 0.0002205 ETH
 ### Scenario 4: Insufficient Balance
 ❌ **Will fail** with clear message
 ```bash
-# If address has 0 ETH
+# If address has 0 CSPR
 /gas-estimate from:0xEmptyAddress to:0xOtherAddress value:1.0
-# Error: Insufficient balance: has 0 ETH, needs 1.0 ETH
+# Error: Insufficient balance: has 0 CSPR, needs 1.0 CSPR
 ```
 
 ---
@@ -186,7 +186,7 @@ Before estimating gas, verify what type of address you're sending to:
 If it returns an error or shows it's a contract, try a different address.
 
 ### 2. Verify Sender Balance
-Make sure the sender has enough ETH:
+Make sure the sender has enough CSPR:
 
 ```bash
 /balance address:0xSenderAddress
@@ -203,7 +203,7 @@ Test with very small amounts first:
 If one address fails, try another:
 - Use your own address as both sender and receiver
 - Use well-known public addresses
-- Avoid contract addresses unless you know they accept ETH
+- Avoid contract addresses unless you know they accept CSPR
 
 ---
 

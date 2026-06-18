@@ -73,15 +73,23 @@ async function checkBalanceAlert(alertId: string, alert: any) {
   }
 
   try {
-    // Convert address to checksum format
-    const checksumAddress = ethers.getAddress(alert.address.toLowerCase());
+    // Handle different address formats
+    let checksumAddress: string;
+    if (/^0x[a-fA-F0-9]{40}$/.test(alert.address)) {
+      // Ethereum-style address
+      checksumAddress = ethers.getAddress(alert.address.toLowerCase());
+    } else {
+      // Casper public key (66 chars) or account hash (68 chars)
+      checksumAddress = alert.address.toLowerCase();
+    }
+    
     const balance = await getEthBalance(checksumAddress);
     const balanceNum = parseFloat(balance);
 
     if (balanceNum >= alert.threshold) {
       await sendAlertNotification(
         alert.channelId,
-        `💰 Balance alert triggered!\n\nAddress: \`${alert.address}\`\nCurrent Balance: ${balance} ETH\nThreshold: ${alert.threshold} ETH`
+        `💰 Balance alert triggered!\n\nAddress: \`${alert.address}\`\nCurrent Balance: ${balance} CSPR\nThreshold: ${alert.threshold} CSPR`
       );
       
       logger.info(`Balance alert triggered: ${alertId}`);
