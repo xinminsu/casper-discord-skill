@@ -5,6 +5,14 @@ import { BalanceSkill } from './skills/balance';
 import { GasSkill } from './skills/gas';
 import { AlertSkill } from './skills/alert';
 import { PushSkill } from './skills/push';
+import { NetworkSkill } from './skills/network';
+import {
+  NativeWriteSkill,
+  TokenWriteSkill,
+  NftWriteSkill,
+  StakingWriteSkill,
+  DefiWriteSkill,
+} from './skills/write';
 import { logger } from './utils/logger';
 
 dotenv.config();
@@ -34,6 +42,13 @@ client.once('ready', async () => {
     new GasSkill(),
     new AlertSkill(),
     new PushSkill(),
+    new NetworkSkill(),
+    // Write operation skills
+    new NativeWriteSkill(),
+    new TokenWriteSkill(),
+    new NftWriteSkill(),
+    new StakingWriteSkill(),
+    new DefiWriteSkill(),
   ];
   
   for (const skill of skills) {
