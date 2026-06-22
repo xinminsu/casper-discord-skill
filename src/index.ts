@@ -13,6 +13,13 @@ import {
   StakingWriteSkill,
   DefiWriteSkill,
 } from './skills/write';
+import {
+  AccountReadSkill,
+  ContractReadSkill,
+  TokenReadSkill,
+  StakingReadSkill,
+  DappReadSkill,
+} from './skills/read';
 import { logger } from './utils/logger';
 
 dotenv.config();
@@ -49,6 +56,12 @@ client.once('ready', async () => {
     new NftWriteSkill(),
     new StakingWriteSkill(),
     new DefiWriteSkill(),
+    // Read query skills
+    new AccountReadSkill(),
+    new ContractReadSkill(),
+    new TokenReadSkill(),
+    new StakingReadSkill(),
+    new DappReadSkill(),
   ];
   
   for (const skill of skills) {

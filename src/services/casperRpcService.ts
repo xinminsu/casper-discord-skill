@@ -250,6 +250,251 @@ export async function getAuctionInfo(blockHash?: string): Promise<any> {
 }
 
 // ============================================================
+// Query Global State - Unified state query interface
+// ============================================================
+
+/**
+ * query_global_state - Query any global state item by key
+ * Supports state_root_hash or block_height as state identifier
+ */
+export async function queryGlobalState(
+  key: string,
+  path: string[] = [],
+  stateRootHash?: string
+): Promise<any> {
+  logger.info(`Querying global state: key=${key}, path=${path.join('/')}`);
+
+  let stateRoot = stateRootHash;
+  if (!stateRoot) {
+    stateRoot = await getStateRootHash();
+  }
+
+  return casperRpcCall('query_global_state', {
+    state_identifier: { StateRootHash: stateRoot },
+    key,
+    path,
+  });
+}
+
+/**
+ * query_global_state - Query by block height
+ */
+export async function queryGlobalStateByHeight(
+  key: string,
+  blockHeight: number,
+  path: string[] = []
+): Promise<any> {
+  logger.info(`Querying global state by height: ${blockHeight}, key=${key}`);
+  return casperRpcCall('query_global_state', {
+    state_identifier: { BlockHeight: blockHeight },
+    key,
+    path,
+  });
+}
+
+// ============================================================
+// State API - Contract & Dictionary queries
+// ============================================================
+
+/**
+ * state_get_contract - Get contract info by contract hash (hash without 'hash-' prefix)
+ */
+export async function getContractInfo(contractHash: string, stateRootHash?: string): Promise<any> {
+  logger.info(`Querying contract: ${contractHash}`);
+
+  let stateRoot = stateRootHash;
+  if (!stateRoot) {
+    stateRoot = await getStateRootHash();
+  }
+
+  // Normalize hash format
+  const cleanHash = contractHash.replace(/^hash-/, '').replace(/^0x/, '');
+
+  return casperRpcCall('state_get_contract', {
+    state_root_hash: stateRoot,
+    contract_hash: `hash-${cleanHash}`,
+  });
+}
+
+/**
+ * state_get_dictionary_item - Query dictionary by seed URef + dictionary key
+ */
+export async function getDictionaryItemByURef(
+  uref: string,
+  dictionaryKey: string,
+  stateRootHash?: string
+): Promise<any> {
+  return getDictionaryItem(uref, dictionaryKey, stateRootHash);
+}
+
+/**
+ * state_get_dictionary_item - Query dictionary by account's named key + dictionary key
+ */
+export async function getDictionaryItemByAccount(
+  accountPublicKey: string,
+  namedKey: string,
+  dictionaryKey: string,
+  stateRootHash?: string
+): Promise<any> {
+  logger.info(`Querying dictionary: account=${accountPublicKey}, namedKey=${namedKey}, dictKey=${dictionaryKey}`);
+
+  // First get account info to find the URef for the named key
+  const accountInfo = await getAccountInfo(accountPublicKey);
+  const namedKeys = accountInfo?.account?.named_keys || [];
+  const namedKeyEntry = namedKeys.find((nk: any) => nk.name === namedKey);
+
+  if (!namedKeyEntry) {
+    throw new Error(`Named key "${namedKey}" not found in account`);
+  }
+
+  return getDictionaryItem(namedKeyEntry.key, dictionaryKey, stateRootHash);
+}
+
+/**
+ * state_get_dictionary_item - Query dictionary by contract's named key + dictionary key
+ */
+export async function getDictionaryItemByContract(
+  contractHash: string,
+  namedKey: string,
+  dictionaryKey: string,
+  stateRootHash?: string
+): Promise<any> {
+  logger.info(`Querying dictionary: contract=${contractHash}, namedKey=${namedKey}, dictKey=${dictionaryKey}`);
+
+  const contractInfo = await getContractInfo(contractHash, stateRootHash);
+  const namedKeys = contractInfo?.contract?.named_keys || [];
+  const namedKeyEntry = namedKeys.find((nk: any) => nk.name === namedKey);
+
+  if (!namedKeyEntry) {
+    throw new Error(`Named key "${namedKey}" not found in contract`);
+  }
+
+  return getDictionaryItem(namedKeyEntry.key, dictionaryKey, stateRootHash);
+}
+
+// ============================================================
+// Era Info - Additional era queries
+// ============================================================
+
+/**
+ * chain_get_era_info - Get era info by switch block height
+ */
+export async function getEraInfoByHeight(height: number): Promise<any> {
+  logger.info(`Querying era info at height: ${height}`);
+  return casperRpcCall('chain_get_era_info', {
+    block_identifier: { Height: height },
+  });
+}
+
+/**
+ * chain_get_era_summary - Get era summary (all era info from switch block)
+ */
+export async function getEraSummary(blockHash?: string): Promise<any> {
+  logger.info(`Querying era summary for: ${blockHash || 'latest'}`);
+  const params = blockHash
+    ? { block_identifier: { Hash: blockHash } }
+    : {};
+  return casperRpcCall('chain_get_era_summary', params);
+}
+
+// ============================================================
+// Auction/Validator queries
+// ============================================================
+
+/**
+ * get_era_validators - Get active validators for an era
+ */
+export async function getEraValidators(blockHash?: string): Promise<any> {
+  logger.info('Querying era validators...');
+  const params = blockHash
+    ? { block_identifier: { Hash: blockHash } }
+    : {};
+  return casperRpcCall('chain_get_era_validators', params);
+}
+
+/**
+ * state_get_auction_info - Get delegation info for a delegator
+ */
+export async function getDelegationInfo(
+  delegatorPublicKey: string,
+  blockHash?: string
+): Promise<any> {
+  logger.info(`Querying delegation info for: ${delegatorPublicKey}`);
+  const params: any = {
+    delegator_public_key: delegatorPublicKey,
+  };
+  if (blockHash) params.block_identifier = { Hash: blockHash };
+  return casperRpcCall('state_get_auction_info', params);
+}
+
+/**
+ * state_get_balance - Get balance by purse URef with full response (including proof)
+ */
+export async function getPurseBalanceDetails(
+  purseUref: string,
+  stateRootHash?: string
+): Promise<any> {
+  logger.info(`Querying purse balance details: ${purseUref}`);
+  let stateRoot = stateRootHash;
+  if (!stateRoot) {
+    stateRoot = await getStateRootHash();
+  }
+  return casperRpcCall('state_get_balance', {
+    state_root_hash: stateRoot,
+    purse_uref: purseUref,
+  });
+}
+
+/**
+ * info_get_validator_changes - Get all validator changes
+ */
+export async function getValidatorChangesInfo(): Promise<any> {
+  logger.info('Querying validator changes...');
+  return casperRpcCall('info_get_validator_changes');
+}
+
+/**
+ * Get account's main purse URef from public key
+ */
+export async function getMainPurseURef(publicKey: string): Promise<string> {
+  const accountInfo = await getAccountInfo(publicKey);
+  if (!accountInfo?.account?.main_purse) {
+    throw new Error('Account not found or has no main purse');
+  }
+  return accountInfo.account.main_purse;
+}
+
+/**
+ * Get account's named keys from public key
+ */
+export async function getAccountNamedKeys(publicKey: string): Promise<any[]> {
+  const accountInfo = await getAccountInfo(publicKey);
+  return accountInfo?.account?.named_keys || [];
+}
+
+/**
+ * Get contract entry points (from contract info)
+ */
+export async function getContractEntryPoints(contractHash: string): Promise<any[]> {
+  const contractInfo = await getContractInfo(contractHash);
+  return contractInfo?.contract?.entry_points || [];
+}
+
+/**
+ * Estimate transaction cost
+ */
+export async function estimateTransactionCost(
+  deployCostInMotes: string,
+  isModuleBytes: boolean = false
+): Promise<any> {
+  logger.info(`Estimating transaction cost: ${deployCostInMotes} motes`);
+  return casperRpcCall('chain_estimate_transaction_cost', {
+    deployment_cost: deployCostInMotes,
+    is_module_bytes: isModuleBytes,
+  });
+}
+
+// ============================================================
 // Query Balance - High-level helper
 // ============================================================
 

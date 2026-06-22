@@ -1,51 +1,73 @@
 # Casper Discord Bot
 
-A powerful Discord Bot built with Skill-based architecture for blockchain queries, transaction execution, gas estimation, event notifications, and **on-chain write operations** on the Casper network.
+A powerful Discord Bot built with Skill-based architecture for **on-chain write operations**, and **comprehensive read queries** on the Casper network.
 
 ## ✨ Features
 
-### 📊 Balance Query
-- Query CSPR balance for any wallet address
+### 📖 Read Queries (读取查询)
+
+#### 🌐 Network & Blockchain Metadata
+- Query node status, network peers, and chainspec
+- Query block information by hash or height
+- Query deploy/transaction details
+- Query block transfers and state root hash
+
+#### 👤 Account, Balance & Gas
+- Query CSPR balance for any wallet address (Casper public key, account hash, or Ethereum-style)
 - Query ERC20 token balances
-- Real-time blockchain data from Casper network
+- Query account info (associated keys, thresholds, named keys)
+- Query purse balance by URef (with full proof details)
+- Real-time gas price queries and transaction fee estimation
+- Query global state by key and path
 
-### ⛽ Gas Related
-- Real-time gas price queries
-- Estimate transaction gas fees
-- Display detailed gas parameters (Gas Limit, Max Fee, Priority Fee)
+#### 📋 Contract & Dictionary
+- Query contract metadata (hash, version, entry points)
+- List all callable entry points with argument types
+- Query dictionary items by URef, by account, or by contract
+- Query stored state items by key and path
+- List all named keys of a contract
 
-### 🔔 Event Notifications
+#### 🪙 CEP-18 / CEP-47 / CEP-78 Tokens
+- CEP-18: total supply, balance of, allowance, token metadata (name/symbol/decimals)
+- CEP-47/78: total supply, owner of, tokens of owner, metadata, approved spender
+- CEP-78: max supply limit, batch owner query
+
+#### ⚖️ Staking & Validators
+- Query all active validators for current era
+- Query single validator detail (stake, commission rate, delegators)
+- Query delegation records for a delegator
+- Query full auction state and validator set changes
+- Query era summary with reward allocations
+
+#### 🔧 General DApp
+- Counter: query current count value
+- AMM: pool reserves, LP balance, staking info
+- Governance: all proposals, proposal detail, vote record
+- RWA: asset record query
+- DEX: open orders query
+
+#### 🔔 Monitoring & Alerts
 - Set up balance change alerts
 - Gas price monitoring alerts
 - Custom message alerts
 - Manage alert lists (add, view, delete)
 
-### 📢 Message Push
-- Push notification messages to specified channels
-- Support custom message content
+### ✏️ Write Operations (链上写入)
 
-### 🌐 Network Query (Read-Only)
-- Query node status and network peers
-- Query block information by hash or height
-- Query deploy/transaction details
-- View validators and auction info
-- View era information and state root hash
-- Query block transfers and chainspec
-
-### 💸 Native CSPR Write Operations
+#### 💸 Native CSPR
 - Transfer CSPR to another account
 - Create temporary purses
 - Add/remove associated keys (multi-sig setup)
 - Set action thresholds for account security
 - Bind named keys for contract/token references
 
-### 🪙 CEP-18 Fungible Token Operations
+#### 🪙 CEP-18 Fungible Tokens
 - Mint / Burn tokens
 - Transfer tokens between accounts
 - Approve / Increase / Decrease allowance
 - Transfer from (approved spender transfers tokens)
 
-### 🖼️ CEP-47 / CEP-78 NFT Operations
+#### 🖼️ CEP-47 / CEP-78 NFT
 - Mint single NFT / Batch mint copies
 - Burn single / Batch burn NFTs
 - Transfer / Batch transfer NFTs
@@ -53,7 +75,7 @@ A powerful Discord Bot built with Skill-based architecture for blockchain querie
 - Update NFT metadata (CEP-78)
 - Set NFT contract admin (CEP-78)
 
-### ⚖️ Staking / Consensus Operations
+#### ⚖️ Staking / Consensus
 - Bond (self-stake to become validator)
 - Delegate CSPR to a validator
 - Unbond self-staked CSPR
@@ -61,19 +83,23 @@ A powerful Discord Bot built with Skill-based architecture for blockchain querie
 - Withdraw staking rewards
 - Set validator commission rate
 
-### 📈 DeFi AMM / Liquidity Operations
+#### 📈 DeFi AMM / Liquidity
 - Swap tokens on AMM DEX
 - Add / Remove liquidity to pools
 - Stake LP tokens for farming rewards
 - Claim farming rewards
 - Create / Cancel limit orders
 
-### 🔧 General DApp Operations
+#### 🔧 General DApp
 - Counter increment / decrement
 - Dictionary key-value put / remove
 - Governance: Create proposal, cast vote, execute proposal
 - RWA asset record saving
 - Generic contract call by hash
+
+### 📢 Bot Utilities
+- Push notification messages to specified channels
+- Support custom message content
 
 ## 🏗️ Architecture
 
@@ -88,7 +114,14 @@ src/
 │   ├── gas/               # Gas price & estimation skill
 │   ├── alert/             # Event monitoring skill
 │   ├── push/              # Message push skill
-│   ├── network/          # Network query skill (read-only RPC)
+│   ├── network/           # Network query skill (read-only RPC)
+│   ├── read/              # Read-only query skills
+│   │   ├── readHelper.ts      # Shared read query helpers
+│   │   ├── account/           # Account & asset read queries
+│   │   ├── contract/          # Contract & dictionary read queries
+│   │   ├── token/             # CEP-18/47/78 token read queries
+│   │   ├── staking/           # Staking & validator read queries
+│   │   └── dapp/              # General DApp read queries (AMM, governance, RWA)
 │   └── write/             # On-chain write operation skills
 │       ├── deployHelper.ts   # Shared deploy result helpers
 │       ├── native/           # Native CSPR operations (transfer, keys, purses)
@@ -287,12 +320,6 @@ Query deploy/transaction information by hash.
 **Parameters:**
 - `hash` (required): Deploy hash
 
-### `/validators` - Query Validators
-View top validators by staked amount.
-
-### `/era` - Query Era Info
-View current era information.
-
 ### `/state-root-hash` - Query State Root Hash
 Get the latest state root hash.
 
@@ -304,6 +331,244 @@ View transfers in a specific block.
 
 ### `/chainspec` - Query Chainspec
 View chainspec configuration information.
+
+---
+
+## 👤 Account & Asset Read Commands
+
+> These commands are read-only (no Gas, no signing key required)
+
+### `/account-info` - Query Account Info
+Query Casper account info including associated keys, action thresholds, named keys, and main purse.
+
+**Parameters:**
+- `public-key` (required): Account public key (68 hex chars) or account hash (64 hex chars)
+
+**Example:**
+```
+/account-info public-key:020275edc1e5e65f4ee0b21453e797b3750f3ea68746675865e12a2e93173c1263e7
+```
+
+### `/purse-balance` - Query Purse Balance
+Query CSPR balance of a specific purse URef.
+
+**Parameters:**
+- `purse-uref` (required): Purse URef (e.g., `uref-xxx-yyy`)
+
+### `/purse-details` - Query Purse Balance Details
+Query purse balance with full proof details.
+
+**Parameters:**
+- `purse-uref` (required): Purse URef
+- `state-root-hash` (optional): State root hash (uses latest if empty)
+
+### `/named-keys` - List Account Named Keys
+List all named keys of an account.
+
+**Parameters:**
+- `public-key` (required): Account public key (68 hex chars)
+
+### `/global-state` - Query Global State
+Query global state by key and optional path.
+
+**Parameters:**
+- `key` (required): State key (e.g., `account-hash-xxx`, `hash-xxx`, `uref-xxx`)
+- `path` (optional): Path segments (comma-separated, e.g., `field1,field2`)
+
+---
+
+## 📋 Contract Read Commands
+
+> These commands are read-only (no Gas, no signing key required)
+
+### `/contract-info` - Query Contract Metadata
+Query Casper contract metadata including hash, version, entry points, and named keys.
+
+**Parameters:**
+- `contract-hash` (required): Contract hash (64 hex chars or `hash-xxx` format)
+
+### `/entry-points` - List Contract Entry Points
+List all callable entry points of a contract with their argument types.
+
+**Parameters:**
+- `contract-hash` (required): Contract hash
+
+### `/contract-named-keys` - List Contract Named Keys
+List all named keys of a contract.
+
+**Parameters:**
+- `contract-hash` (required): Contract hash
+
+### `/dict-item` - Query Dictionary Item by URef
+Query a dictionary item by seed URef and dictionary key.
+
+**Parameters:**
+- `uref` (required): Seed URef (e.g., `uref-xxx-yyy`)
+- `dict-key` (required): Dictionary key to query
+
+### `/dict-by-account` - Query Dictionary via Account
+Query a dictionary item using an account's named key as the seed URef.
+
+**Parameters:**
+- `public-key` (required): Account public key (68 hex chars)
+- `named-key` (required): Named key in the account referencing the dictionary URef
+- `dict-key` (required): Dictionary key to query
+
+### `/dict-by-contract` - Query Dictionary via Contract
+Query a dictionary item using a contract's named key as the seed URef.
+
+**Parameters:**
+- `contract-hash` (required): Contract hash
+- `named-key` (required): Named key in the contract referencing the dictionary URef
+- `dict-key` (required): Dictionary key to query
+
+### `/state-item` - Query State Item
+Query a stored state item by key and optional path (legacy `state_get_item`).
+
+**Parameters:**
+- `key` (required): State key
+- `path` (optional): Path segments (comma-separated)
+
+---
+
+## 🪙 Token Read Commands (CEP-18 / CEP-47 / CEP-78)
+
+> These commands are read-only (no Gas, no signing key required)
+
+### CEP-18 Fungible Token Queries
+
+- `/token-total-supply` - Query CEP-18 token total supply
+  - `contract-hash` (required): CEP-18 contract hash
+
+- `/token-balance` - Query CEP-18 token balance of an account
+  - `contract-hash` (required): CEP-18 contract hash
+  - `owner` (required): Token owner public key (68 hex chars)
+
+- `/token-allowance` - Query CEP-18 allowance (approved spender amount)
+  - `contract-hash` (required): CEP-18 contract hash
+  - `owner` (required): Token owner public key
+  - `spender` (required): Approved spender public key
+
+- `/token-meta` - Query CEP-18 token metadata (name, symbol, decimals)
+  - `contract-hash` (required): CEP-18 contract hash
+
+### CEP-47 / CEP-78 NFT Queries
+
+- `/nft-total-supply` - Query NFT contract total supply
+  - `contract-hash` (required): NFT contract hash
+
+- `/nft-owner-of` - Query the owner of a specific NFT
+  - `contract-hash` (required): NFT contract hash
+  - `token-id` (required): NFT token ID
+
+- `/nft-tokens-of` - Query all NFT token IDs owned by an account
+  - `contract-hash` (required): NFT contract hash
+  - `owner` (required): Owner public key (68 hex chars)
+
+- `/nft-metadata` - Query NFT metadata (image, attributes, etc.)
+  - `contract-hash` (required): NFT contract hash
+  - `token-id` (required): NFT token ID
+
+- `/nft-approved` - Query approved spender for an NFT
+  - `contract-hash` (required): NFT contract hash
+  - `token-id` (required): NFT token ID
+
+### CEP-78 Advanced NFT Queries
+
+- `/nft-max-supply` - Query NFT contract max supply limit
+  - `contract-hash` (required): CEP-78 contract hash
+
+- `/nft-batch-owners` - Query owners of multiple NFTs at once
+  - `contract-hash` (required): CEP-78 contract hash
+  - `token-ids` (required): Comma-separated token IDs (e.g., `1,2,3`)
+
+---
+
+## ⚖️ Staking & Validator Read Commands
+
+> These commands are read-only (no Gas, no signing key required)
+
+### `/era-validators` - Query Era Validators
+Query all active validators for the current era.
+
+**Parameters:**
+- `block-hash` (optional): Block hash (uses latest if empty)
+
+### `/validator-detail` - Query Validator Details
+Query detailed information about a single validator (stake, commission rate, delegators).
+
+**Parameters:**
+- `public-key` (required): Validator public key (68 hex chars)
+
+### `/delegation` - Query Delegation Info
+Query delegation information for a delegator across all or a specific validator.
+
+**Parameters:**
+- `delegator` (required): Delegator public key (68 hex chars)
+- `validator` (optional): Validator public key to filter by
+
+### `/auction-info` - Query Full Auction State
+Query full auction state including all bids and delegators.
+
+**Parameters:**
+- `block-hash` (optional): Block hash
+
+### `/validator-changes` - Query Validator Changes
+Query recent validator set changes.
+
+### `/era-summary` - Query Era Summary
+Query era summary including validator rewards and seigniorage allocations.
+
+**Parameters:**
+- `block-hash` (optional): Block hash
+
+---
+
+## 🔧 General DApp Read Commands
+
+> These commands are read-only (no Gas, no signing key required)
+
+### Counter
+
+- `/counter-value` - Query the current value of a counter contract
+  - `contract-hash` (required): Counter contract hash
+
+### AMM / Liquidity
+
+- `/amm-reserves` - Query AMM pool reserves (token balances and LP supply)
+  - `contract-hash` (required): AMM pool contract hash
+
+- `/amm-lp-balance` - Query user LP token balance in an AMM pool
+  - `contract-hash` (required): AMM pool contract hash
+  - `user` (required): User public key (68 hex chars)
+
+- `/amm-stake-info` - Query user LP staking info (staked amount, pending rewards)
+  - `contract-hash` (required): Staking contract hash
+  - `user` (required): User public key (68 hex chars)
+
+### Governance
+
+- `/all-proposals` - Query all governance proposals
+  - `contract-hash` (required): Governance contract hash
+
+- `/proposal-detail` - Query details of a single governance proposal
+  - `contract-hash` (required): Governance contract hash
+  - `proposal-id` (required): Proposal ID
+
+- `/vote-record` - Query a user vote record on a proposal
+  - `contract-hash` (required): Governance contract hash
+  - `proposal-id` (required): Proposal ID
+  - `voter` (required): Voter public key (68 hex chars)
+
+### RWA & DEX
+
+- `/asset-record` - Query an RWA (Real World Asset) record on-chain
+  - `contract-hash` (required): RWA contract hash
+  - `asset-id` (required): Asset ID
+
+- `/open-orders` - Query open orders for a user on a DEX
+  - `contract-hash` (required): DEX contract hash
+  - `user` (required): User public key (68 hex chars)
 
 ---
 
@@ -531,6 +796,13 @@ casper-discord-skill/
 │   │   ├── alert/          # Event alert skill
 │   │   ├── push/           # Message push skill
 │   │   ├── network/        # Network query skill (read-only RPC)
+│   │   ├── read/           # Read-only query skills
+│   │   │   ├── readHelper.ts   # Shared read query helpers
+│   │   │   ├── account/        # Account & asset queries
+│   │   │   ├── contract/       # Contract & dictionary queries
+│   │   │   ├── token/          # CEP-18/47/78 token queries
+│   │   │   ├── staking/        # Staking & validator queries
+│   │   │   └── dapp/           # General DApp queries
 │   │   └── write/          # On-chain write operation skills
 │   │       ├── deployHelper.ts  # Shared deploy helpers
 │   │       ├── native/     # Native CSPR operations
@@ -624,11 +896,17 @@ Log files are saved in `logs/` directory:
    - Default gas payment: 10 CSPR (adjustable in code)
    - Contract installation uses 50 CSPR gas payment
 
-3. **Data Storage**: 
+3. **Read Queries**: 
+   - Read operations are free (no Gas, no signing key required)
+   - All read queries go through RPC `state_get_*`, `query_global_state`, `state_get_dictionary_item` etc.
+   - Token/NFT queries read contract storage via named keys and dictionaries
+   - Dictionary batch reads are limited to 10 items to avoid rate limits
+
+4. **Data Storage**: 
    - Currently using in-memory storage for alerts
    - Production should use databases (e.g., MongoDB, PostgreSQL)
 
-4. **Rate Limiting**: 
+5. **Rate Limiting**: 
    - Discord API has rate limits, control request frequency
    - RPC nodes may also have request limits
 
